@@ -151,3 +151,10 @@ vite.config.ts.timestamp-*
 # IDE files
 .idea/
 .vscode/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.db
+api-server/giftbox.db

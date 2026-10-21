@@ -21,6 +21,10 @@ app.add_middleware(
 # Optional: Paste your free Formspree endpoint URL here later (e.g. "https://formspree.io/f/xxxxxxx")
 FORMSPREE_WEBHOOK_URL = ""
 
+@app.get("/")
+def root():
+    return {"status": "online", "message": "The Gift Box API is running", "docs": "/docs"}
+
 class LoginRequest(BaseModel):
     pin: str
 
