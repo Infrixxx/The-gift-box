@@ -21,8 +21,10 @@ export default function Home() {
 
       if (response.ok) {
         router.push("/dashboard");
-      } else {
+      } else if (response.status === 401) {
         setError("Incorrect PIN. Please try again.");
+      } else {
+        setError(`Server returned status ${response.status}. Please try again.`);
       }
     } catch (err) {
       setError("Unable to connect to the server.");

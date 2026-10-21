@@ -7,10 +7,27 @@ import sqlite3
 import urllib.request
 import json
 
+from starlette.types import ASGIApp, Scope, Receive, Send
+
 DB_PATH = Path(__file__).resolve().parent / "giftbox.db"
+
+class NormalizePathMiddleware:
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope.get("type") == "http":
+            path = scope.get("path", "")
+            if "//" in path:
+                while "//" in path:
+                    path = path.replace("//", "/")
+                scope["path"] = path
+                scope["raw_path"] = path.encode("ascii")
+        await self.app(scope, receive, send)
 
 app = FastAPI()
 
+app.add_middleware(NormalizePathMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
