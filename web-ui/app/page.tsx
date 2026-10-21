@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "./config";
 
 export default function Home() {
   const [pin, setPin] = useState("");
@@ -12,7 +13,7 @@ export default function Home() {
     setError("");
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/login", {
+      const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ pin }),
@@ -39,10 +40,13 @@ export default function Home() {
             type="password"
             value={pin}
             onChange={(e) => setPin(e.target.value)}
-            placeholder="Enter PIN"
-            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-4 text-center text-2xl tracking-[0.5em] text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
-            maxLength={6}
+            placeholder="••••••••"
+            className="w-full rounded-lg border border-zinc-700 bg-zinc-800 p-4 text-center text-2xl tracking-[0.4em] text-white focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+            maxLength={8}
           />
+          <p className="text-center text-xs text-zinc-500">
+            A milestone date that started it all (DDMMYYYY)
+          </p>
           {error && <p className="text-center text-sm text-red-500">{error}</p>}
           <button
             type="submit"

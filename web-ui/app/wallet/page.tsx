@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { API_BASE_URL } from "../config";
 
 interface Coupon {
   id: number;
@@ -21,7 +22,7 @@ export default function CouponWalletPage() {
 
   const fetchCoupons = async () => {
     try {
-      const res = await fetch("http://localhost:8000/api/coupons");
+      const res = await fetch(`${API_BASE_URL}/api/coupons`);
       const data = await res.json();
       setCoupons(data.coupons || []);
     } catch (error) {
@@ -39,7 +40,7 @@ export default function CouponWalletPage() {
     if (!selectedCoupon) return;
     try {
       const res = await fetch(
-        `http://localhost:8000/api/coupons/${selectedCoupon.id}/redeem`,
+        `${API_BASE_URL}/api/coupons/${selectedCoupon.id}/redeem`,
         { method: "POST" }
       );
       if (res.ok) {
@@ -55,7 +56,7 @@ export default function CouponWalletPage() {
   };
 
   const handleResetAll = async () => {
-    await fetch("http://localhost:8000/api/coupons/reset", { method: "POST" });
+    await fetch(`${API_BASE_URL}/api/coupons/reset`, { method: "POST" });
     fetchCoupons();
   };
 

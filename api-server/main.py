@@ -2,9 +2,12 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+from pathlib import Path
 import sqlite3
 import urllib.request
 import json
+
+DB_PATH = Path(__file__).resolve().parent / "giftbox.db"
 
 app = FastAPI()
 
@@ -28,7 +31,7 @@ class AnswerRequest(BaseModel):
 
 @app.post("/api/login")
 def login(request: LoginRequest):
-    conn = sqlite3.connect("giftbox.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE username='partner' AND pin=?", (request.pin,))
     user = cursor.fetchone()
@@ -41,7 +44,7 @@ def login(request: LoginRequest):
 
 @app.get("/api/coupons")
 def get_coupons():
-    conn = sqlite3.connect("giftbox.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM coupons WHERE user_id = 1 ORDER BY is_redeemed ASC, id ASC")
@@ -51,7 +54,7 @@ def get_coupons():
 
 @app.post("/api/coupons/{coupon_id}/redeem")
 def redeem_coupon(coupon_id: int):
-    conn = sqlite3.connect("giftbox.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
@@ -94,7 +97,7 @@ def redeem_coupon(coupon_id: int):
 
 @app.post("/api/coupons/reset")
 def reset_coupons():
-    conn = sqlite3.connect("giftbox.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("UPDATE coupons SET is_redeemed = 0, redeemed_at = NULL WHERE user_id = 1")
     conn.commit()
@@ -103,7 +106,7 @@ def reset_coupons():
 
 @app.get("/api/hunt")
 def get_hunt_stages():
-    conn = sqlite3.connect("giftbox.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute(
@@ -115,7 +118,7 @@ def get_hunt_stages():
 
 @app.post("/api/hunt/verify")
 def verify_hunt_answer(req: AnswerRequest):
-    conn = sqlite3.connect("giftbox.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
@@ -157,7 +160,7 @@ def verify_hunt_answer(req: AnswerRequest):
 
 @app.post("/api/hunt/reset")
 def reset_hunt():
-    conn = sqlite3.connect("giftbox.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("UPDATE scavenger_clues SET is_unlocked = 0 WHERE user_id = 1")
     conn.commit()
