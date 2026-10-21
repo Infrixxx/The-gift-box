@@ -2,21 +2,79 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "../config";
 
 export default function Dashboard() {
+  const router = useRouter();
   const [isPlaylistUnlocked, setIsPlaylistUnlocked] = useState(false);
   const [isHuntCompleted, setIsHuntCompleted] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     setIsPlaylistUnlocked(localStorage.getItem("giftbox_playlist_unlocked") === "true");
     setIsHuntCompleted(localStorage.getItem("giftbox_hunt_completed") === "true");
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("giftbox_logged_in");
+    router.push("/");
+  };
+
+  const handleResetForHer = async () => {
+    const confirmed = window.confirm(
+      "Reset all progress for her?\n\nThis will re-lock all Scavenger Hunt chapters, un-redeem all coupons, reset reasons cards, and lock the box so she starts completely fresh."
+    );
+    if (!confirmed) return;
+
+    setIsResetting(true);
+    try {
+      await fetch(`${API_BASE_URL}/api/hunt/reset`, { method: "POST" });
+      await fetch(`${API_BASE_URL}/api/coupons/reset`, { method: "POST" });
+    } catch (e) {
+      console.error("Reset error:", e);
+    }
+
+    localStorage.removeItem("unlocked_reasons");
+    localStorage.removeItem("giftbox_playlist_unlocked");
+    localStorage.removeItem("giftbox_hunt_completed");
+    localStorage.removeItem("giftbox_logged_in");
+    setIsResetting(false);
+    router.push("/");
+  };
+
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center p-6 md:p-12 bg-zinc-950 text-white overflow-hidden">
       {/* Ambient Glows */}
       <div className="pointer-events-none fixed top-[-10%] left-[-10%] h-96 w-96 rounded-full bg-rose-600/15 blur-[140px]" />
       <div className="pointer-events-none fixed bottom-[-10%] right-[-10%] h-96 w-96 rounded-full bg-amber-500/15 blur-[140px]" />
+
+      {/* Top Header Controls */}
+      <div className="relative z-10 w-full max-w-6xl flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xs text-zinc-400 font-medium">Session Active</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleResetForHer}
+            disabled={isResetting}
+            title="Reset all clues, cards, and coupons so she gets a clean experience"
+            className="flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/80 px-3.5 py-1.5 text-xs text-zinc-400 hover:text-amber-300 hover:border-amber-500/40 transition backdrop-blur-sm disabled:opacity-50"
+          >
+            <span>{isResetting ? "⏳" : "✨"}</span>
+            <span>{isResetting ? "Resetting..." : "Reset for Her"}</span>
+          </button>
+          <button
+            onClick={handleLogout}
+            title="Lock the app and return to the PIN screen"
+            className="flex items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/80 px-3.5 py-1.5 text-xs text-zinc-400 hover:text-rose-400 hover:border-rose-500/40 transition backdrop-blur-sm"
+          >
+            <span>🔒</span>
+            <span>Lock Box</span>
+          </button>
+        </div>
+      </div>
 
       <div className="relative z-10 w-full max-w-6xl text-center mb-10">
         <span className="inline-block rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1 text-xs font-semibold tracking-wider text-rose-300 uppercase mb-4">
